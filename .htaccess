@@ -1,0 +1,63 @@
+RewriteEngine On
+RewriteBase /
+
+# no trailing slash
+RewriteRule ^(.*)/$ $1 [R=301,L]
+
+# no www
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+
+# no index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php?/$1 [L]
+
+# Turn on Expires and set default to 0
+ExpiresActive On
+ExpiresDefault A0
+
+AddOutputFilterByType DEFLATE text/text text/html text/plain text/xml text/css application/x-javascript application/javascript application/json image/svg+xml
+ 
+# Set up caching on media files for 1 year (forever?)
+<FilesMatch "\.(flv|ico|pdf|avi|mov|ppt|doc|mp3|wmv|wav)$">
+ExpiresDefault A29030400
+Header append Cache-Control "public"
+</FilesMatch>
+ 
+# Set up caching on media files for 1 week
+<FilesMatch "\.(gif|jpg|jpeg|png|swf|svg)$">
+ExpiresDefault A604800
+Header append Cache-Control "public, must-revalidate"
+</FilesMatch>
+ 
+# Set up 3 day caching on commonly updated files
+<FilesMatch "\.(xml|txt|html|js|css)$">
+ExpiresDefault A604800
+Header append Cache-Control "proxy-revalidate"
+</FilesMatch>
+ 
+# Force no caching for dynamic files
+<FilesMatch "\.(php|cgi|pl|htm)$">
+ExpiresActive Off
+Header set Cache-Control "private, no-cache, no-store, proxy-revalidate, no-transform"
+Header set Pragma "no-cache"
+</FilesMatch>
+
+<FilesMatch ".(js|css)$">
+SetOutputFilter DEFLATE
+</FilesMatch>
+
+<Files .git/*>
+    order allow,deny
+    deny from all
+</Files>
+
+<Files .gitignore>
+    order allow,deny
+    deny from all
+</Files>
+
+AddDefaultCharset UTF-8
+Header unset ETag
+FileETag None
